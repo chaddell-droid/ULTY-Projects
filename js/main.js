@@ -114,7 +114,7 @@ function gaussianRandom() {
 // Make functions globally available
 window.togglePositionDetails = togglePositionDetails;
 window.recalculatePerformance = recalculatePerformance;
-window.calculateNowcast = calculateNowcast;
+// window.calculateNowcast = calculateNowcast;
 window.copyNowcastSummary = copyNowcastSummary;
 window.exportAllPositions = exportAllPositions;
 window.exportMoneynessData = exportMoneynessData;
