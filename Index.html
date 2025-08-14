@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ULTY NAV Nowcast Tool</title>
+    
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/visualizations.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>ULTY NAV Nowcast Tool</h1>
+            <p>Project forward NAV estimates using YieldMax holdings and Market Chameleon data</p>
+        </div>
+
+        <div class="content">
+            <!-- File Upload Section -->
+            <div class="upload-section">
+                <div class="upload-box" id="holdingsBox">
+                    <h3>ULTY Holdings File</h3>
+                    <p style="font-size: 0.9em; color: #666; margin: 10px 0;">TidalETF Holdings CSV</p>
+                    <input type="file" id="holdingsFile" class="file-input" accept=".csv">
+                    <label for="holdingsFile" class="upload-btn">Choose File</label>
+                    <div class="file-info" id="holdingsInfo">No file selected</div>
+                </div>
+
+                <div class="upload-box" id="chameleonBox">
+                    <h3>Market Chameleon Data</h3>
+                    <p style="font-size: 0.9em; color: #666; margin: 10px 0;">Stock Watchlist CSV</p>
+                    <input type="file" id="chameleonFile" class="file-input" accept=".csv">
+                    <label for="chameleonFile" class="upload-btn">Choose File</label>
+                    <div class="file-info" id="chameleonInfo">No file selected</div>
+                </div>
+            </div>
+
+            <div class="status-message" id="statusMessage"></div>
+
+            <!-- Data Summary Section -->
+            <div class="data-summary" id="dataSummary">
+                <h4>Fund Overview</h4>
+                <div class="summary-grid" id="summaryGrid"></div>
+            </div>
+
+            <!-- Holdings Details Section -->
+            <div class="file-details-section" id="fileDetails">
+                <h3>Holdings Detail</h3>
+                <div class="position-summary">
+                    <div class="position-card stocks" id="stocksCard">
+                        <h4>Stock Positions</h4>
+                        <div class="metric">
+                            <span class="metric-label">Count:</span>
+                            <span class="metric-value" id="stockCount">0</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Market Value:</span>
+                            <span class="metric-value" id="stockValue">$0</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Weight:</span>
+                            <span class="metric-value" id="stockWeight">0%</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Avg IV:</span>
+                            <span class="metric-value" id="stockAvgIV">0%</span>
+                        </div>
+                    </div>
+                    <div class="position-card calls" id="callsCard">
+                        <h4>Call Options</h4>
+                        <div class="metric">
+                            <span class="metric-label">Count:</span>
+                            <span class="metric-value" id="callCount">0</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Market Value:</span>
+                            <span class="metric-value" id="callValue">$0</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Weight:</span>
+                            <span class="metric-value" id="callWeight">0%</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Avg IV:</span>
+                            <span class="metric-value" id="callAvgIV">0%</span>
+                        </div>
+                    </div>
+                    <div class="position-card puts" id="putsCard">
+                        <h4>Put Options</h4>
+                        <div class="metric">
+                            <span class="metric-label">Count:</span>
+                            <span class="metric-value" id="putCount">0</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Market Value:</span>
+                            <span class="metric-value" id="putValue">$0</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Weight:</span>
+                            <span class="metric-value" id="putWeight">0%</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Avg IV:</span>
+                            <span class="metric-value" id="putAvgIV">0%</span>
+                        </div>
+                    </div>
+                    <div class="position-card cash" id="cashCard" style="background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);">
+                        <h4>Cash & Other</h4>
+                        <div class="metric">
+                            <span class="metric-label">Count:</span>
+                            <span class="metric-value" id="cashCount">0</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Market Value:</span>
+                            <span class="metric-value" id="cashValue">$0</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Weight:</span>
+                            <span class="metric-value" id="cashWeight">0%</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Yield:</span>
+                            <span class="metric-value" id="cashYield">0%</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="toggle-details-btn" onclick="togglePositionDetails(event)">Show Position Details</button>
+                <button class="export-btn" id="exportAllBtn" style="display: none; margin-left: 10px;" onclick="exportAllPositions()">Export All Positions</button>
+                <div id="positionDetailsTable" style="display: none;">
+                    <!-- Position details tables will be dynamically inserted here -->
+                </div>
+            </div>
+
+            <!-- Performance Section -->
+            <div class="performance-section" id="performanceSection">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h3>Current Market Performance</h3>
+                    <button class="export-btn" onclick="recalculatePerformance()" style="background: #007bff; margin-right: 10px;">Recalculate</button>
+                </div>
+                <div class="performance-grid" id="performanceGrid"></div>
+                <h4 style="margin-top: 20px;">Stock Positions Performance</h4>
+                <div class="scrollable-table">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Symbol</th>
+                                <th>Last Price</th>
+                                <th>Day Change</th>
+                                <th>% Change</th>
+                                <th>Volume</th>
+                                <th>IV30</th>
+                                <th>IV Change</th>
+                                <th>Weight</th>
+                                <th>Contribution</th>
+                            </tr>
+                        </thead>
+                        <tbody id="stockPerformanceBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Calculation Section -->
+            <div class="calculation-section">
+                <h3>Nowcast Parameters</h3>
+                
+                <div class="weighted-metrics" id="weightedMetrics">
+                    <h4>Basket-Weighted Metrics</h4>
+                    <div class="metric-row header-row">
+                        <div>Metric</div>
+                        <div>Weighted Value</div>
+                        <div>Min</div>
+                        <div>Max</div>
+                    </div>
+                    <div class="metric-row">
+                        <div>Implied Volatility</div>
+                        <div id="weightedIV">-</div>
+                        <div id="minIV">-</div>
+                        <div id="maxIV">-</div>
+                    </div>
+                    <div class="metric-row">
+                        <div>Price Change %</div>
+                        <div id="weightedChange">-</div>
+                        <div id="minChange">-</div>
+                        <div id="maxChange">-</div>
+                    </div>
+                    <div class="metric-row">
+                        <div>20-Day Volatility</div>
+                        <div id="weighted20DayVol">-</div>
+                        <div id="min20DayVol">-</div>
+                        <div id="max20DayVol">-</div>
+                    </div>
+                </div>
+
+                <div class="input-grid">
+                    <div class="input-group">
+                        <label for="spotPrice">Current ULTY Price</label>
+                        <input type="number" id="spotPrice" step="0.01" value="6.08" placeholder="Enter current price">
+                    </div>
+                    <div class="input-group">
+                        <label for="dividendAmount">Dividend Amount</label>
+                        <input type="number" id="dividendAmount" step="0.01" value="0.10" placeholder="Ex-div amount">
+                    </div>
+                    <div class="input-group">
+                        <label for="projectionDays">Projection Days</label>
+                        <input type="number" id="projectionDays" step="1" value="1" placeholder="Days to project">
+                    </div>
+                    <div class="input-group">
+                        <label for="scenarioType">Scenario Type</label>
+                        <select id="scenarioType">
+                            <option value="base">Intraday (Live Data)</option>
+                            <option value="custom">Custom</option>
+                            <option value="bullish">Bullish</option>
+                            <option value="bearish">Bearish</option>
+                            <option value="volatile">High Volatility</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="vegaCoverage">Vega Coverage (%)</label>
+                        <input type="number" id="vegaCoverage" step="0.1" value="24.8" placeholder="Effective coverage">
+                    </div>
+                    <div class="input-group">
+                        <label for="termFactor">Term Structure Factor</label>
+                        <input type="number" id="termFactor" step="0.01" value="0.92" placeholder="VIX9D/VIX ratio">
+                    </div>
+                    <div class="input-group">
+                        <label for="marketMove">Market Move Override (%)</label>
+                        <input type="number" id="marketMove" step="0.1" placeholder="Override live data">
+                    </div>
+                    <div class="input-group">
+                        <label for="ivOverride">IV Override (%)</label>
+                        <input type="number" id="ivOverride" step="0.1" placeholder="Override weighted IV">
+                    </div>
+                    <div class="input-group">
+                        <label for="distributionRate">Monthly Distribution (%)</label>
+                        <input type="number" id="distributionRate" step="0.01" value="0" placeholder="0 for intraday">
+                    </div>
+                    <div class="input-group">
+                        <label for="simulations">Simulations</label>
+                        <input type="number" id="simulations" step="100" value="1000" min="100" max="10000">
+                    </div>
+                    <div class="input-group">
+                        <label for="confidenceLevel">Confidence Level (%)</label>
+                        <input type="number" id="confidenceLevel" step="1" value="90" min="50" max="99">
+                    </div>
+                    <div class="input-group">
+                        <label for="correlationFactor">Correlation Factor</label>
+                        <input type="number" id="correlationFactor" step="0.1" value="0.7" min="0" max="1">
+                    </div>
+                </div>
+                <button class="calculate-btn" id="calculateBtn" onclick="calculateNowcast()" disabled>
+                    Load Both Files to Enable Calculation
+                </button>
+            </div>
+
+            <!-- Results Section -->
+            <div class="results-section" id="resultsSection">
+                <h3>Nowcast Results</h3>
+                
+                <div class="result-grid">
+                    <div class="result-card primary">
+                        <div class="label">Nowcast NAV</div>
+                        <div class="value" id="projectedNav">$0.00</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="label">NAV Change</div>
+                        <div class="value" id="navChange">0.00%</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="label">Price-Only NAV</div>
+                        <div class="value" id="priceOnlyNav">$0.00</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="label">Vega Impact</div>
+                        <div class="value" id="vegaImpact">0.00%</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="label">Premium/Discount</div>
+                        <div class="value" id="premiumDisc">0.00%</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="label">Ex-Div NAV</div>
+                        <div class="value" id="exDivNav">$0.00</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="label">Confidence Range</div>
+                        <div class="value" id="confRange">$0.00 - $0.00</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="label">VaR (5%)</div>
+                        <div class="value" id="var5">$0.00</div>
+                    </div>
+                </div>
+
+                <div class="weighted-metrics" style="margin-top: 20px;">
+                    <h4>Nowcast Breakdown</h4>
+                    <div class="metric-row header-row">
+                        <div>Component</div>
+                        <div>Value</div>
+                        <div>Impact</div>
+                        <div>Notes</div>
+                    </div>
+                    <div class="metric-row">
+                        <div>Starting NAV (NAV₀)</div>
+                        <div id="startingNav">-</div>
+                        <div>-</div>
+                        <div>Last night's official NAV</div>
+                    </div>
+                    <div class="metric-row">
+                        <div>Basket Return</div>
+                        <div id="basketRet">-</div>
+                        <div id="basketImpact">-</div>
+                        <div>Weighted equity move</div>
+                    </div>
+                    <div class="metric-row">
+                        <div>Weighted IV30</div>
+                        <div id="weightedIV30">-</div>
+                        <div>-</div>
+                        <div>Current implied vol</div>
+                    </div>
+                    <div class="metric-row">
+                        <div>IV Change</div>
+                        <div id="ivChg">-</div>
+                        <div id="vegaImp">-</div>
+                        <div>Short vega adjustment</div>
+                    </div>
+                    <div class="metric-row">
+                        <div>Current Price</div>
+                        <div id="currentPrice">-</div>
+                        <div id="premDisc">-</div>
+                        <div>ULTY spot price</div>
+                    </div>
+                    <div class="metric-row" id="exDivRow" style="display: none;">
+                        <div>Ex-Dividend</div>
+                        <div id="exDivAmount">-</div>
+                        <div id="impliedOpen">-</div>
+                        <div>Implied ex-div open</div>
+                    </div>
+                </div>
+
+                <div class="nowcast-summary">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h4 style="margin: 0;">📊 NOWCAST SUMMARY</h4>
+                        <button class="export-btn" onclick="copyNowcastSummary()" style="background: #667eea;">Copy Summary</button>
+                    </div>
+                    <div class="summary-content" id="summaryContent" style="margin-top: 15px;">Awaiting calculation...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- External Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    
+    <!-- JavaScript Files -->
+    <script src="js/main.js"></script>
+    <script src="js/file-handler.js"></script>
+    <script src="js/data-processor.js"></script>
+    <script src="js/calculations.js"></script>
+    <script src="js/visualizations.js"></script>
+    <script src="js/exports.js"></script>
+</body>
+</html>

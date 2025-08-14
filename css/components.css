@@ -1,0 +1,404 @@
+/* Components CSS - Specific Component Styles */
+
+/* File Details Section */
+.file-details-section {
+    margin: 30px 0;
+    padding: 25px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    display: none;
+}
+
+.file-details-section.active {
+    display: block;
+}
+
+.file-details-section h3 {
+    color: #333;
+    margin-bottom: 20px;
+    font-size: 1.4em;
+    border-bottom: 2px solid #667eea;
+    padding-bottom: 10px;
+}
+
+/* Position Summary Cards */
+.position-summary {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.position-card {
+    padding: 20px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+    text-align: center;
+}
+
+.position-card.stocks {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+}
+
+.position-card.calls {
+    background: linear-gradient(135deg, #cce5ff 0%, #b8daff 100%);
+}
+
+.position-card.puts {
+    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+}
+
+.position-card h4 {
+    color: #333;
+    margin-bottom: 15px;
+    font-size: 1.2em;
+}
+
+.position-card .metric {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.position-card .metric:last-child {
+    border-bottom: none;
+}
+
+.position-card .metric-label {
+    color: #666;
+    font-size: 0.9em;
+}
+
+.position-card .metric-value {
+    font-weight: 600;
+    color: #333;
+}
+
+/* Position Section */
+.position-section {
+    margin: 25px 0;
+    padding: 20px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.position-section h4 {
+    font-size: 1.2em;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 20px 0 10px 0;
+}
+
+/* Performance Section */
+.performance-section {
+    margin: 30px 0;
+    padding: 25px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    display: none;
+}
+
+.performance-section.active {
+    display: block;
+}
+
+.performance-section h3 {
+    color: #333;
+    margin-bottom: 20px;
+    font-size: 1.4em;
+}
+
+.performance-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.perf-metric {
+    padding: 15px;
+    background: white;
+    border-radius: 8px;
+    text-align: center;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.perf-metric:hover {
+    border-color: #667eea;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.1);
+}
+
+.perf-metric .metric-title {
+    font-size: 0.85em;
+    color: #666;
+    margin-bottom: 5px;
+}
+
+.perf-metric .metric-value {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #333;
+}
+
+.perf-metric.positive .metric-value {
+    color: #28a745;
+}
+
+.perf-metric.negative .metric-value {
+    color: #dc3545;
+}
+
+/* Calculation Section */
+.calculation-section {
+    margin: 40px 0;
+    padding: 30px;
+    background: #f8f9fa;
+    border-radius: 10px;
+}
+
+.calculation-section h3 {
+    color: #333;
+    margin-bottom: 20px;
+    font-size: 1.5em;
+}
+
+.input-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.input-group label {
+    color: #555;
+    margin-bottom: 5px;
+    font-weight: 600;
+    font-size: 0.9em;
+}
+
+.input-group input, 
+.input-group select {
+    padding: 10px;
+    border: 2px solid #e0e0e0;
+    border-radius: 5px;
+    font-size: 1em;
+    transition: border-color 0.3s ease;
+}
+
+.input-group input:focus, 
+.input-group select:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+/* Weighted Metrics */
+.weighted-metrics {
+    padding: 20px;
+    background: white;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.weighted-metrics h4 {
+    color: #333;
+    margin-bottom: 15px;
+    font-size: 1.2em;
+}
+
+.weighted-metrics .metric-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 15px;
+    padding: 10px 0;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.weighted-metrics .metric-row:last-child {
+    border-bottom: none;
+}
+
+.weighted-metrics .header-row {
+    font-weight: 600;
+    color: #666;
+    font-size: 0.9em;
+}
+
+/* Results Section */
+.results-section {
+    margin-top: 40px;
+    padding: 30px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    display: none;
+}
+
+.results-section.active {
+    display: block;
+    animation: fadeIn 0.5s ease;
+}
+
+.results-section h3 {
+    color: #333;
+    margin-bottom: 25px;
+    font-size: 1.5em;
+    border-bottom: 2px solid #667eea;
+    padding-bottom: 10px;
+}
+
+.result-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.result-card {
+    padding: 20px;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    border-radius: 10px;
+    text-align: center;
+}
+
+.result-card .label {
+    color: #666;
+    font-size: 0.9em;
+    margin-bottom: 5px;
+}
+
+.result-card .value {
+    color: #333;
+    font-size: 1.8em;
+    font-weight: bold;
+}
+
+.result-card.primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    grid-column: span 2;
+}
+
+.result-card.primary .label {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.result-card.primary .value {
+    color: white;
+}
+
+/* Nowcast Summary */
+.nowcast-summary {
+    margin-top: 20px;
+    background: linear-gradient(135deg, #f0f4ff 0%, #e9ecef 100%);
+    border: 2px solid #667eea;
+    border-radius: 10px;
+    padding: 20px;
+}
+
+.nowcast-summary h4 {
+    color: #667eea;
+    font-size: 1.3em;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.summary-content {
+    font-family: 'Courier New', monospace;
+    font-size: 0.95em;
+    line-height: 1.6;
+    background: white;
+    padding: 15px;
+    border-radius: 5px;
+    white-space: pre-wrap;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.summary-highlight {
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: bold;
+}
+
+/* Chart Container */
+.chart-container {
+    margin-top: 30px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 10px;
+}
+
+/* Tabs */
+.tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.tab {
+    padding: 10px 20px;
+    background: none;
+    border: none;
+    color: #666;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.tab.active {
+    color: #667eea;
+    border-bottom: 3px solid #667eea;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* Position Type Badges */
+.position-type {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 0.85em;
+    font-weight: 600;
+}
+
+.position-type.stock {
+    background: #d4edda;
+    color: #155724;
+}
+
+.position-type.call {
+    background: #cce5ff;
+    color: #004085;
+}
+
+.position-type.put {
+    background: #f8d7da;
+    color: #721c24;
+}
