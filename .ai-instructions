@@ -1,0 +1,37 @@
+# AI Assistant Instructions for ULTY NAV Nowcast Tool
+
+## Quick Context
+This is a web app for calculating projected NAV for ULTY ETF based on holdings and market data. Uses vanilla JavaScript with modular architecture.
+
+## Before Making Changes
+1. Check AppState for data (NOT window.holdingsData)
+2. Position display logic is in data-processor.js, not main.js
+3. All file processing goes through file-handler.js first
+4. CSV parsing handles options in OCC format
+
+## Common Pitfalls to Avoid
+- Don't assume functions are in main.js - check all files
+- Data is stored in AppState, not window object
+- displayPositionDetails() must set container.innerHTML
+- Option tickers include spaces: "AFRM 250815C00077500"
+- Market data percentages may be decimals (0.01 = 1%)
+
+## When Debugging
+1. Check browser console for specific file:line errors
+2. Verify AppState.holdingsData and AppState.marketData exist
+3. Position counts: ~26 stocks, ~49 calls, ~48 puts, 1 cash
+
+## File Responsibilities
+- main.js: UI initialization and event binding
+- data-processor.js: Core data logic and display
+- file-handler.js: File upload and initial processing
+- calculations.js: Nowcast math (needs implementation)
+- exports.js: CSV export functions
+- visualizations.js: Charts
+
+## Testing Checklist
+- [ ] Both CSV files load without errors
+- [ ] Position details display all types
+- [ ] Sorting works on all columns
+- [ ] Export buttons generate CSVs
+- [ ] Console shows no errors (except calculateNowcast)

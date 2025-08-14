@@ -1,5 +1,12 @@
 /* Main CSS - Core Styles and Layout */
+.data-table th:hover {
+    background-color: #f0f0f0;
+}
 
+.data-table th {
+    position: relative;
+    padding-right: 20px;
+}
 * {
     margin: 0;
     padding: 0;

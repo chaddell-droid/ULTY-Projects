@@ -1,5 +1,11 @@
 // Data Processor - Functions for processing holdings and market data
-
+// Add this near the top of data-processor.js with other state variables
+const sortState = {
+    stocks: { column: null, ascending: true },
+    calls: { column: null, ascending: true },
+    puts: { column: null, ascending: true },
+    cash: { column: null, ascending: true }
+};
 // Process holdings data
 function processHoldingsData(data) {
     const processed = {
@@ -291,25 +297,40 @@ function displayPositionDetails() {
     const data = AppState.holdingsData;
     let html = '';
     
-    // Generate actual HTML content
+    // Helper function to create sortable header
+    function createSortableHeader(type, column, text) {
+        const sortIcon = sortState[type].column === column 
+            ? (sortState[type].ascending ? ' ▲' : ' ▼') 
+            : ' ⇅';
+        return `<th onclick="handleSort('${type}', '${column}')" style="cursor: pointer; user-select: none;">
+                    ${text}${sortIcon}
+                </th>`;
+    }
+    
+    // STOCKS SECTION
     if (data.stocks && data.stocks.length > 0) {
+        // Sort data if a column is selected
+        let stocksToDisplay = sortState.stocks.column 
+            ? sortTableData(data.stocks, sortState.stocks.column, sortState.stocks.ascending, 'stocks')
+            : data.stocks;
+            
         html += `
             <div class="position-section">
                 <h4>📈 Stock Positions (${data.stocks.length})</h4>
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th>Ticker</th>
-                            <th>Name</th>
-                            <th>Shares</th>
-                            <th>Price</th>
-                            <th>Market Value</th>
-                            <th>Weight</th>
+                            ${createSortableHeader('stocks', 'ticker', 'Ticker')}
+                            ${createSortableHeader('stocks', 'name', 'Name')}
+                            ${createSortableHeader('stocks', 'shares', 'Shares')}
+                            ${createSortableHeader('stocks', 'price', 'Price')}
+                            ${createSortableHeader('stocks', 'marketValue', 'Market Value')}
+                            ${createSortableHeader('stocks', 'weight', 'Weight')}
                         </tr>
                     </thead>
                     <tbody>`;
         
-        data.stocks.forEach(stock => {
+        stocksToDisplay.forEach(stock => {
             html += `
                 <tr>
                     <td>${stock.ticker}</td>
@@ -323,28 +344,32 @@ function displayPositionDetails() {
         html += '</tbody></table></div>';
     }
     
-    // Add similar sections for calls, puts, cash...
-        // ADD CALL OPTIONS SECTION
+    // CALLS SECTION
     if (data.calls && data.calls.length > 0) {
+        // Sort data if a column is selected
+        let callsToDisplay = sortState.calls.column 
+            ? sortTableData(data.calls, sortState.calls.column, sortState.calls.ascending, 'calls')
+            : data.calls;
+            
         html += `
             <div class="position-section">
                 <h4>📞 Call Options (${data.calls.length})</h4>
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th>Underlying</th>
-                            <th>Strike</th>
-                            <th>Expiry</th>
-                            <th>DTE</th>
-                            <th>Contracts</th>
-                            <th>Price</th>
-                            <th>Market Value</th>
-                            <th>Weight</th>
+                            ${createSortableHeader('calls', 'underlying', 'Underlying')}
+                            ${createSortableHeader('calls', 'strike', 'Strike')}
+                            ${createSortableHeader('calls', 'expiration', 'Expiry')}
+                            ${createSortableHeader('calls', 'daysToExpiry', 'DTE')}
+                            ${createSortableHeader('calls', 'shares', 'Contracts')}
+                            ${createSortableHeader('calls', 'price', 'Price')}
+                            ${createSortableHeader('calls', 'marketValue', 'Market Value')}
+                            ${createSortableHeader('calls', 'weight', 'Weight')}
                         </tr>
                     </thead>
                     <tbody>`;
         
-        data.calls.forEach(call => {
+        callsToDisplay.forEach(call => {
             const expiryDate = call.expiration ? 
                 new Date(call.expiration).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: '2-digit' }) : '-';
             const dte = call.daysToExpiry || '-';
@@ -364,27 +389,32 @@ function displayPositionDetails() {
         html += '</tbody></table></div>';
     }
     
-    // ADD PUT OPTIONS SECTION
+    // PUTS SECTION
     if (data.puts && data.puts.length > 0) {
+        // Sort data if a column is selected
+        let putsToDisplay = sortState.puts.column 
+            ? sortTableData(data.puts, sortState.puts.column, sortState.puts.ascending, 'puts')
+            : data.puts;
+            
         html += `
             <div class="position-section">
                 <h4>📉 Put Options (${data.puts.length})</h4>
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th>Underlying</th>
-                            <th>Strike</th>
-                            <th>Expiry</th>
-                            <th>DTE</th>
-                            <th>Contracts</th>
-                            <th>Price</th>
-                            <th>Market Value</th>
-                            <th>Weight</th>
+                            ${createSortableHeader('puts', 'underlying', 'Underlying')}
+                            ${createSortableHeader('puts', 'strike', 'Strike')}
+                            ${createSortableHeader('puts', 'expiration', 'Expiry')}
+                            ${createSortableHeader('puts', 'daysToExpiry', 'DTE')}
+                            ${createSortableHeader('puts', 'shares', 'Contracts')}
+                            ${createSortableHeader('puts', 'price', 'Price')}
+                            ${createSortableHeader('puts', 'marketValue', 'Market Value')}
+                            ${createSortableHeader('puts', 'weight', 'Weight')}
                         </tr>
                     </thead>
                     <tbody>`;
         
-        data.puts.forEach(put => {
+        putsToDisplay.forEach(put => {
             const expiryDate = put.expiration ? 
                 new Date(put.expiration).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: '2-digit' }) : '-';
             const dte = put.daysToExpiry || '-';
@@ -404,8 +434,12 @@ function displayPositionDetails() {
         html += '</tbody></table></div>';
     }
     
-    // ADD CASH SECTION (if needed)
+    // CASH SECTION (if needed)
     if (data.cash && data.cash.length > 0) {
+        let cashToDisplay = sortState.cash.column 
+            ? sortTableData(data.cash, sortState.cash.column, sortState.cash.ascending, 'cash')
+            : data.cash;
+            
         html += `
             <div class="position-section">
                 <h4>💰 Cash & Other (${data.cash.length})</h4>
@@ -413,15 +447,15 @@ function displayPositionDetails() {
                     <thead>
                         <tr>
                             <th>Type</th>
-                            <th>Name</th>
-                            <th>Amount</th>
-                            <th>Market Value</th>
-                            <th>Weight</th>
+                            ${createSortableHeader('cash', 'name', 'Name')}
+                            ${createSortableHeader('cash', 'shares', 'Amount')}
+                            ${createSortableHeader('cash', 'marketValue', 'Market Value')}
+                            ${createSortableHeader('cash', 'weight', 'Weight')}
                         </tr>
                     </thead>
                     <tbody>`;
         
-        data.cash.forEach(cash => {
+        cashToDisplay.forEach(cash => {
             html += `
                 <tr>
                     <td>Cash/MM</td>
@@ -434,11 +468,85 @@ function displayPositionDetails() {
         html += '</tbody></table></div>';
     }
     
-    // Set the HTML
-    container.innerHTML = html;
-    // THIS IS THE MISSING LINE - Actually insert the HTML!
     container.innerHTML = html;
 }
+
+// Add this sorting helper function
+function sortTableData(data, column, ascending, type) {
+    return [...data].sort((a, b) => {
+        let aVal, bVal;
+        
+        // Get values based on column
+        switch(column) {
+            case 'ticker':
+            case 'underlying':
+                aVal = a.underlying || a.ticker || '';
+                bVal = b.underlying || b.ticker || '';
+                break;
+            case 'name':
+                aVal = a.name || '';
+                bVal = b.name || '';
+                break;
+            case 'shares':
+                aVal = parseFloat(a.shares) || 0;
+                bVal = parseFloat(b.shares) || 0;
+                break;
+            case 'price':
+                aVal = parseFloat(a.price) || 0;
+                bVal = parseFloat(b.price) || 0;
+                break;
+            case 'marketValue':
+                aVal = parseFloat(a.marketValue) || 0;
+                bVal = parseFloat(b.marketValue) || 0;
+                break;
+            case 'weight':
+                aVal = parseFloat(a.weight) || 0;
+                bVal = parseFloat(b.weight) || 0;
+                break;
+            case 'strike':
+                aVal = parseFloat(a.strike) || 0;
+                bVal = parseFloat(b.strike) || 0;
+                break;
+            case 'expiration':
+                aVal = a.expiration ? new Date(a.expiration).getTime() : 0;
+                bVal = b.expiration ? new Date(b.expiration).getTime() : 0;
+                break;
+            case 'daysToExpiry':
+                aVal = a.daysToExpiry || 0;
+                bVal = b.daysToExpiry || 0;
+                break;
+            default:
+                aVal = a[column] || '';
+                bVal = b[column] || '';
+        }
+        
+        // Compare values
+        if (typeof aVal === 'string') {
+            return ascending ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+        } else {
+            return ascending ? aVal - bVal : bVal - aVal;
+        }
+    });
+}
+
+// Add click handler function
+function handleSort(type, column) {
+    console.log(`Sorting ${type} by ${column}`);
+    
+    // Toggle sort direction if same column, otherwise default to ascending
+    if (sortState[type].column === column) {
+        sortState[type].ascending = !sortState[type].ascending;
+    } else {
+        sortState[type].column = column;
+        sortState[type].ascending = true;
+    }
+    
+    // Redisplay with current sort
+    displayPositionDetails();
+}
+
+// Make it globally accessible
+window.handleSort = handleSort;
 // Make functions globally available
 window.processHoldingsData = processHoldingsData;
 window.processMarketData = processMarketData;
