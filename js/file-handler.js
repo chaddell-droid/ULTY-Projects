@@ -19,9 +19,11 @@ function handleFileUpload(event, source) {
             
             if (source === 'holdings') {
                 AppState.holdingsData = processHoldingsData(data);
+                window.holdingsData = AppState.holdingsData;  // Make it globally accessible
                 displayHoldingsSummary();
             } else {
                 AppState.marketData = processMarketData(data);
+                window.marketData = AppState.marketData;
                 if (AppState.holdingsData) {
                     displayPerformanceMetrics();
                     calculateWeightedMetrics();
