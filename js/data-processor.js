@@ -282,13 +282,163 @@ function displayHoldingsSummary() {
     document.getElementById('cashYield').textContent = 'N/A'; // Could calculate if yield data available
 }
 
-// Display position details (called when toggling details)
 function displayPositionDetails() {
-    // This function will be implemented to populate the detailed position tables
-    // For now, we'll leave it as a placeholder
     console.log('Displaying position details...');
+    
+    const container = document.getElementById('positionDetailsTable');
+    if (!container || !AppState.holdingsData) return;
+    
+    const data = AppState.holdingsData;
+    let html = '';
+    
+    // Generate actual HTML content
+    if (data.stocks && data.stocks.length > 0) {
+        html += `
+            <div class="position-section">
+                <h4>📈 Stock Positions (${data.stocks.length})</h4>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Ticker</th>
+                            <th>Name</th>
+                            <th>Shares</th>
+                            <th>Price</th>
+                            <th>Market Value</th>
+                            <th>Weight</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+        
+        data.stocks.forEach(stock => {
+            html += `
+                <tr>
+                    <td>${stock.ticker}</td>
+                    <td>${stock.name || '-'}</td>
+                    <td>${stock.shares.toLocaleString()}</td>
+                    <td>$${stock.price.toFixed(2)}</td>
+                    <td>$${stock.marketValue.toLocaleString()}</td>
+                    <td>${stock.weight.toFixed(2)}%</td>
+                </tr>`;
+        });
+        html += '</tbody></table></div>';
+    }
+    
+    // Add similar sections for calls, puts, cash...
+        // ADD CALL OPTIONS SECTION
+    if (data.calls && data.calls.length > 0) {
+        html += `
+            <div class="position-section">
+                <h4>📞 Call Options (${data.calls.length})</h4>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Underlying</th>
+                            <th>Strike</th>
+                            <th>Expiry</th>
+                            <th>DTE</th>
+                            <th>Contracts</th>
+                            <th>Price</th>
+                            <th>Market Value</th>
+                            <th>Weight</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+        
+        data.calls.forEach(call => {
+            const expiryDate = call.expiration ? 
+                new Date(call.expiration).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: '2-digit' }) : '-';
+            const dte = call.daysToExpiry || '-';
+            
+            html += `
+                <tr>
+                    <td>${call.underlying || call.ticker}</td>
+                    <td>$${call.strike ? call.strike.toFixed(2) : '-'}</td>
+                    <td>${expiryDate}</td>
+                    <td>${dte}</td>
+                    <td>${call.shares.toLocaleString()}</td>
+                    <td>$${call.price.toFixed(2)}</td>
+                    <td>$${call.marketValue.toLocaleString()}</td>
+                    <td>${call.weight.toFixed(2)}%</td>
+                </tr>`;
+        });
+        html += '</tbody></table></div>';
+    }
+    
+    // ADD PUT OPTIONS SECTION
+    if (data.puts && data.puts.length > 0) {
+        html += `
+            <div class="position-section">
+                <h4>📉 Put Options (${data.puts.length})</h4>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Underlying</th>
+                            <th>Strike</th>
+                            <th>Expiry</th>
+                            <th>DTE</th>
+                            <th>Contracts</th>
+                            <th>Price</th>
+                            <th>Market Value</th>
+                            <th>Weight</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+        
+        data.puts.forEach(put => {
+            const expiryDate = put.expiration ? 
+                new Date(put.expiration).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: '2-digit' }) : '-';
+            const dte = put.daysToExpiry || '-';
+            
+            html += `
+                <tr>
+                    <td>${put.underlying || put.ticker}</td>
+                    <td>$${put.strike ? put.strike.toFixed(2) : '-'}</td>
+                    <td>${expiryDate}</td>
+                    <td>${dte}</td>
+                    <td>${put.shares.toLocaleString()}</td>
+                    <td>$${put.price.toFixed(2)}</td>
+                    <td>$${put.marketValue.toLocaleString()}</td>
+                    <td>${put.weight.toFixed(2)}%</td>
+                </tr>`;
+        });
+        html += '</tbody></table></div>';
+    }
+    
+    // ADD CASH SECTION (if needed)
+    if (data.cash && data.cash.length > 0) {
+        html += `
+            <div class="position-section">
+                <h4>💰 Cash & Other (${data.cash.length})</h4>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Name</th>
+                            <th>Amount</th>
+                            <th>Market Value</th>
+                            <th>Weight</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+        
+        data.cash.forEach(cash => {
+            html += `
+                <tr>
+                    <td>Cash/MM</td>
+                    <td>${cash.name || cash.ticker}</td>
+                    <td>${cash.shares.toLocaleString()}</td>
+                    <td>$${cash.marketValue.toLocaleString()}</td>
+                    <td>${cash.weight.toFixed(2)}%</td>
+                </tr>`;
+        });
+        html += '</tbody></table></div>';
+    }
+    
+    // Set the HTML
+    container.innerHTML = html;
+    // THIS IS THE MISSING LINE - Actually insert the HTML!
+    container.innerHTML = html;
 }
-
 // Make functions globally available
 window.processHoldingsData = processHoldingsData;
 window.processMarketData = processMarketData;
