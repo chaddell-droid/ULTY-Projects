@@ -14,10 +14,16 @@ function calculateNowcast() {
         return;
     }
 
+    // Show initial status
+    showStatus('info', 'Starting nowcast calculation...');
+
     try {
         // Get holdings data
         const holdingsData = AppState.holdingsData;
         const marketData = AppState.marketData;
+        
+        // Show data validation status
+        showStatus('info', 'Validating holdings and market data...');
         
         // Calculate current NAV from holdings
         currentNAV = holdingsData.netAssets / holdingsData.sharesOutstanding;
@@ -45,6 +51,7 @@ function calculateNowcast() {
         console.log('Spot Price:', spotPrice);
         
         // ========== STEP 1: Price-only move of equity sleeve ==========
+        showStatus('info', 'Step 1: Calculating price-only equity moves...');
         console.log('\nStep 1: Price-only move of equity sleeve');
         
         let basketReturn = 0;
@@ -100,6 +107,7 @@ function calculateNowcast() {
         console.log(`NAV₀ = ${currentNAV.toFixed(4)} → NAV_px = ${navPriceOnly.toFixed(4)}`);
         
         // ========== STEP 2: IV/term-structure adjustment (short-vega) ==========
+        showStatus('info', 'Step 2: Calculating volatility adjustments...');
         console.log('\nStep 2: IV/term-structure adjustment');
         console.log(`Weighted IV30: ${weightedIV30.toFixed(1)}%`);
         console.log(`Weighted IV30 change: ${weightedIVChange.toFixed(2)}%`);
@@ -123,6 +131,7 @@ function calculateNowcast() {
         console.log(`NAV_IV = ${navWithIV.toFixed(4)} (${adjustedVegaPnL >= 0 ? '+' : ''}${(adjustedVegaPnL * 100).toFixed(3)}% from vega)`);
         
         // ========== STEP 3: Premium/Discount calculation ==========
+        showStatus('info', 'Step 3: Calculating premium/discount...');
         const premium = (spotPrice / navWithIV - 1) * 100;
         console.log(`\nStep 3: Premium/Discount`);
         console.log(`Spot price: ${spotPrice.toFixed(2)}`);
@@ -142,6 +151,7 @@ function calculateNowcast() {
         }
         
         // ========== Monte Carlo Simulation for Confidence Bands ==========
+        showStatus('info', `Running ${numSimulations} Monte Carlo simulations...`);
         const projectedNAVs = [];
         
         // Simplified simulation focusing on basket moves
@@ -171,30 +181,66 @@ function calculateNowcast() {
         const var5 = currentNAV - projectedNAVs[Math.floor(numSimulations * 0.05)];
         const probAbove = projectedNAVs.filter(nav => nav > currentNAV).length / numSimulations;
         
+        // Log values before updating results
+        console.log('Preparing results object with values:');
+        console.log('currentNAV:', currentNAV);
+        console.log('navWithIV:', navWithIV);
+        console.log('navPriceOnly:', navPriceOnly);
+        console.log('basketReturn:', basketReturn);
+        console.log('adjustedVegaPnL:', adjustedVegaPnL);
+        console.log('lowerBound:', lowerBound);
+        console.log('upperBound:', upperBound);
+        
         // Update results display
         updateNowcastResults({
-            currentNAV: currentNAV,
-            projectedNAV: navWithIV,
-            navPriceOnly: navPriceOnly,
-            basketReturn: basketReturn * 100,
-            vegaImpact: adjustedVegaPnL * 100,
-            premium: premium,
-            exDivNAV: exDivNAV,
-            impliedOpen: impliedExDivOpen,
-            weightedIV: weightedIV30,
-            ivChange: weightedIVChange,
-            spotPrice: spotPrice,
-            dividendAmount: dividendAmount,
-            lowerBound: lowerBound,
-            upperBound: upperBound,
-            var5: var5,
-            probAbove: probAbove
+            currentNAV: currentNAV || 0,
+            projectedNAV: navWithIV || 0,
+            navPriceOnly: navPriceOnly || 0,
+            basketReturn: (basketReturn * 100) || 0,
+            vegaImpact: (adjustedVegaPnL * 100) || 0,
+            premium: premium || 0,
+            exDivNAV: exDivNAV || 0,
+            impliedOpen: impliedExDivOpen || 0,
+            weightedIV: weightedIV30 || 0,
+            ivChange: weightedIVChange || 0,
+            spotPrice: spotPrice || 0,
+            dividendAmount: dividendAmount || 0,
+            lowerBound: lowerBound || 0,
+            upperBound: upperBound || 0,
+            var5: var5 || 0,
+            probAbove: probAbove || 0
         });
         
         // Show results section
         const resultsSection = document.getElementById('resultsSection');
         if (resultsSection) {
             resultsSection.classList.add('active');
+            resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            console.log('Results section shown');
+        } else {
+            console.error('Results section element not found!');
+        }
+        
+        // Create visualization if function exists
+        if (typeof window.createNowcastVisualization === 'function') {
+            const vizResults = {
+                currentNAV: currentNAV,
+                navWithIV: navWithIV,
+                navPriceOnly: navPriceOnly,
+                basketReturn: basketReturn,
+                adjustedVegaPnL: adjustedVegaPnL,
+                premium: premium,
+                weightedIV30: weightedIV30,
+                weightedIVChange: weightedIVChange,
+                lowerBound: lowerBound,
+                upperBound: upperBound,
+                spotPrice: spotPrice,
+                exDivNAV: exDivNAV,
+                impliedExDivOpen: impliedExDivOpen,
+                dividendAmount: dividendAmount
+            };
+            window.createNowcastVisualization(vizResults);
+            console.log('Created nowcast visualization');
         }
         
         // Log final summary
@@ -226,8 +272,17 @@ function calculateNowcast() {
             console.log('Chart function createDistributionChart not found - skipping');
         }
         
-        // Show success message
-        showStatus('success', 'Nowcast calculation completed successfully');
+        // Display moneyness analysis if function exists
+        if (typeof window.displayMoneynessAnalysis === 'function') {
+            console.log('Running moneyness analysis...');
+            window.displayMoneynessAnalysis();
+        } else {
+            console.log('Moneyness analysis function not found - skipping');
+        }
+        
+        // Show success message with final NAV
+        const finalMessage = `Nowcast completed! Projected NAV: $${navWithIV.toFixed(2)} (${basketReturn >= 0 ? '+' : ''}${(basketReturn * 100).toFixed(2)}%)`;
+        showStatus('success', finalMessage);
         
     } catch (error) {
         console.error('Error in nowcast calculation:', error);
@@ -238,14 +293,29 @@ function calculateNowcast() {
 
 // Helper function to update the results display
 function updateNowcastResults(results) {
+    console.log('Updating nowcast results with:', results);
+    
+    // Check if results object has required properties
+    if (!results || !results.projectedNAV || !results.currentNAV) {
+        console.error('Invalid results object:', results);
+        showStatus('error', 'Failed to update results - invalid data');
+        return;
+    }
+    
     // Update main result cards
     const projectedNavEl = document.getElementById('projectedNav');
-    if (projectedNavEl) projectedNavEl.textContent = `$${results.projectedNAV.toFixed(4)}`;
+    if (projectedNavEl) {
+        projectedNavEl.textContent = `$${results.projectedNAV.toFixed(4)}`;
+    } else {
+        console.warn('Element not found: projectedNav');
+    }
     
     const navChangeEl = document.getElementById('navChange');
     if (navChangeEl) {
         const change = ((results.projectedNAV - results.currentNAV) / results.currentNAV) * 100;
         navChangeEl.textContent = `${change >= 0 ? '+' : ''}${change.toFixed(3)}%`;
+    } else {
+        console.warn('Element not found: navChange');
     }
     
     const priceOnlyNavEl = document.getElementById('priceOnlyNav');
@@ -263,17 +333,29 @@ function updateNowcastResults(results) {
     const confRangeEl = document.getElementById('confRange');
     if (confRangeEl) {
         confRangeEl.textContent = `$${results.lowerBound.toFixed(2)} - $${results.upperBound.toFixed(2)}`;
+    } else {
+        console.warn('Element not found: confRange');
     }
     
     const var5El = document.getElementById('var5');
-    if (var5El) var5El.textContent = `$${results.var5.toFixed(3)}`;
+    if (var5El) {
+        var5El.textContent = `$${results.var5.toFixed(3)}`;
+    } else {
+        console.warn('Element not found: var5');
+    }
     
     const probAboveEl = document.getElementById('probAbove');
-    if (probAboveEl) probAboveEl.textContent = `${(results.probAbove * 100).toFixed(1)}%`;
+    if (probAboveEl) {
+        probAboveEl.textContent = `${(results.probAbove * 100).toFixed(1)}%`;
+    } else {
+        console.warn('Element not found: probAbove');
+    }
     
     const expectedDistEl = document.getElementById('expectedDist');
     if (expectedDistEl) {
         expectedDistEl.textContent = results.dividendAmount > 0 ? `$${results.dividendAmount.toFixed(2)}` : 'N/A';
+    } else {
+        console.warn('Element not found: expectedDist');
     }
     
     // Update breakdown table elements
@@ -415,22 +497,42 @@ function handleScenarioChange() {
 function calculateWeightedMetrics() {
     if (!AppState.holdingsData || !AppState.marketData) return;
     
-    let weightedIV = 0, weightedChange = 0, weighted20DayVol = 0;
+    let weightedIV = 0, weightedChange = 0, weighted20DayVol = 0, weightedIVChange = 0;
     let totalWeight = 0;
+    let minIV = Infinity, maxIV = -Infinity;
+    let minChange = Infinity, maxChange = -Infinity;
+    let minIVChange = Infinity, maxIVChange = -Infinity;
     
-    AppState.holdingsData.positions.forEach(position => {
-        const dataSymbol = position.underlying || position.ticker;
+    // Focus on stocks only for weighted metrics (exclude options and cash)
+    AppState.holdingsData.stocks.forEach(position => {
+        // Skip cash and money market positions
+        if (position.ticker === 'FGXXX' || position.ticker === 'Cash&Other' || position.ticker.includes('MM')) {
+            return;
+        }
+        
+        const dataSymbol = position.ticker;
         const mktData = AppState.marketData[dataSymbol];
         
         if (mktData) {
             const iv = mktData.iv30 || 30;
             const change = mktData.changePercent || 0;
             const vol20 = mktData.volatility20Day || 0;
+            const ivChg = mktData.ivChange || 0;
             
+            // Calculate weighted values
             weightedIV += iv * position.weight;
             weightedChange += change * position.weight;
             weighted20DayVol += vol20 * position.weight;
+            weightedIVChange += ivChg * position.weight;
             totalWeight += position.weight;
+            
+            // Track min/max values
+            minIV = Math.min(minIV, iv);
+            maxIV = Math.max(maxIV, iv);
+            minChange = Math.min(minChange, change);
+            maxChange = Math.max(maxChange, change);
+            minIVChange = Math.min(minIVChange, ivChg);
+            maxIVChange = Math.max(maxIVChange, ivChg);
         }
     });
     
@@ -438,8 +540,18 @@ function calculateWeightedMetrics() {
         weightedMetrics = {
             iv: weightedIV / totalWeight,
             change: weightedChange / totalWeight,
-            vol20Day: weighted20DayVol / totalWeight
+            vol20Day: weighted20DayVol / totalWeight,
+            ivChange: weightedIVChange / totalWeight,
+            minIV: minIV === Infinity ? 0 : minIV,
+            maxIV: maxIV === -Infinity ? 0 : maxIV,
+            minChange: minChange === Infinity ? 0 : minChange,
+            maxChange: maxChange === -Infinity ? 0 : maxChange,
+            minIVChange: minIVChange === Infinity ? 0 : minIVChange,
+            maxIVChange: maxIVChange === -Infinity ? 0 : maxIVChange
         };
+        
+        // Store in AppState for global access
+        AppState.weightedMetrics = weightedMetrics;
         
         // Update display if elements exist
         updateWeightedMetricsDisplay();
@@ -448,17 +560,48 @@ function calculateWeightedMetrics() {
 
 // Update weighted metrics display
 function updateWeightedMetricsDisplay() {
+    // Weighted IV
     const weightedIVEl = document.getElementById('weightedIV');
-    if (weightedIVEl) weightedIVEl.textContent = `${weightedMetrics.iv.toFixed(1)}%`;
+    if (weightedIVEl) {
+        const iv = weightedMetrics.iv.toFixed(1);
+        const ivChg = weightedMetrics.ivChange;
+        const ivChgColor = ivChg >= 0 ? 'green' : 'red';
+        weightedIVEl.innerHTML = `${iv}% <span style="color: ${ivChgColor}; font-size: 0.9em;">(${ivChg >= 0 ? '+' : ''}${ivChg.toFixed(2)}%)</span>`;
+    }
     
+    // Min/Max IV
+    const minIVEl = document.getElementById('minIV');
+    if (minIVEl) minIVEl.textContent = `${weightedMetrics.minIV.toFixed(1)}%`;
+    
+    const maxIVEl = document.getElementById('maxIV');
+    if (maxIVEl) maxIVEl.textContent = `${weightedMetrics.maxIV.toFixed(1)}%`;
+    
+    // Weighted Change
     const weightedChangeEl = document.getElementById('weightedChange');
     if (weightedChangeEl) {
         const change = weightedMetrics.change;
         weightedChangeEl.textContent = `${change >= 0 ? '+' : ''}${change.toFixed(2)}%`;
     }
     
+    // Min/Max Change
+    const minChangeEl = document.getElementById('minChange');
+    if (minChangeEl) minChangeEl.textContent = `${weightedMetrics.minChange >= 0 ? '+' : ''}${weightedMetrics.minChange.toFixed(2)}%`;
+    
+    const maxChangeEl = document.getElementById('maxChange');
+    if (maxChangeEl) maxChangeEl.textContent = `${weightedMetrics.maxChange >= 0 ? '+' : ''}${weightedMetrics.maxChange.toFixed(2)}%`;
+    
+    // 20-Day Vol
     const weighted20DayVolEl = document.getElementById('weighted20DayVol');
-    if (weighted20DayVolEl) weightedVolEl.textContent = `${weightedMetrics.vol20Day.toFixed(1)}%`;
+    if (weighted20DayVolEl) weighted20DayVolEl.textContent = `${weightedMetrics.vol20Day.toFixed(1)}%`;
+    
+    // Log metrics to console for debugging
+    console.log('Weighted Portfolio Metrics:', {
+        'Weighted IV': `${weightedMetrics.iv.toFixed(1)}%`,
+        'IV Change': `${weightedMetrics.ivChange >= 0 ? '+' : ''}${weightedMetrics.ivChange.toFixed(2)}%`,
+        'Price Change': `${weightedMetrics.change >= 0 ? '+' : ''}${weightedMetrics.change.toFixed(2)}%`,
+        'IV Range': `${weightedMetrics.minIV.toFixed(1)}% - ${weightedMetrics.maxIV.toFixed(1)}%`,
+        'Change Range': `${weightedMetrics.minChange.toFixed(2)}% - ${weightedMetrics.maxChange.toFixed(2)}%`
+    });
 }
 
 // Export functions to make them globally accessible

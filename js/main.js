@@ -64,9 +64,21 @@ function showStatus(type, message) {
     statusEl.textContent = message;
     statusEl.style.display = 'block';
     
-    setTimeout(() => {
+    // Different timeouts for different message types
+    let timeout = 5000; // Default for success/error
+    if (type === 'info') {
+        timeout = 2000; // Shorter for info messages during processing
+    }
+    
+    // Clear any existing timeout
+    if (statusEl.timeoutId) {
+        clearTimeout(statusEl.timeoutId);
+    }
+    
+    // Set new timeout
+    statusEl.timeoutId = setTimeout(() => {
         statusEl.style.display = 'none';
-    }, 5000);
+    }, timeout);
 }
 
 // Toggle position details

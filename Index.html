@@ -23,21 +23,54 @@
                 <div class="upload-box" id="holdingsBox">
                     <h3>ULTY Holdings File</h3>
                     <p style="font-size: 0.9em; color: #666; margin: 10px 0;">TidalETF Holdings CSV</p>
-                    <input type="file" id="holdingsFile" class="file-input" accept=".csv">
-                    <label for="holdingsFile" class="upload-btn">Choose File</label>
+                    <div class="button-group">
+                        <button class="auto-load-btn" onclick="autoLoadHoldingsFile()" title="Load most recent TidalETF_Services file">
+                            <svg width="16" height="16" style="margin-right: 6px; vertical-align: middle;">
+                                <path d="M8 4v8m4-4l-4 4-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+                            </svg>
+                            Auto Load Latest
+                        </button>
+                        <span style="margin: 0 10px; color: #999;">or</span>
+                        <input type="file" id="holdingsFile" class="file-input" accept=".csv">
+                        <label for="holdingsFile" class="upload-btn">Choose File</label>
+                    </div>
                     <div class="file-info" id="holdingsInfo">No file selected</div>
                 </div>
 
                 <div class="upload-box" id="chameleonBox">
                     <h3>Market Chameleon Data</h3>
                     <p style="font-size: 0.9em; color: #666; margin: 10px 0;">Stock Watchlist CSV</p>
-                    <input type="file" id="chameleonFile" class="file-input" accept=".csv">
-                    <label for="chameleonFile" class="upload-btn">Choose File</label>
+                    <div class="button-group">
+                        <button class="auto-load-btn" onclick="autoLoadChameleonFile()" title="Load most recent StockWatchlist_ULTY file">
+                            <svg width="16" height="16" style="margin-right: 6px; vertical-align: middle;">
+                                <path d="M8 4v8m4-4l-4 4-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+                            </svg>
+                            Auto Load Latest
+                        </button>
+                        <span style="margin: 0 10px; color: #999;">or</span>
+                        <input type="file" id="chameleonFile" class="file-input" accept=".csv">
+                        <label for="chameleonFile" class="upload-btn">Choose File</label>
+                    </div>
                     <div class="file-info" id="chameleonInfo">No file selected</div>
                 </div>
             </div>
 
             <div class="status-message" id="statusMessage"></div>
+
+            <!-- Data Validation Section -->
+            <div class="validation-section" id="validationSection" style="display: none;">
+                <div class="validation-header">
+                    <h4>Data Validation</h4>
+                    <button class="validate-btn" onclick="validateDataCoverage()">
+                        <svg width="16" height="16" style="margin-right: 6px; vertical-align: middle;">
+                            <path d="M8 2 L14 8 L8 14 L2 8 Z" stroke="currentColor" stroke-width="2" fill="none"/>
+                            <path d="M6 8 L7 9 L10 6" stroke="currentColor" stroke-width="2" fill="none"/>
+                        </svg>
+                        Check Data Coverage
+                    </button>
+                </div>
+                <div class="validation-results" id="validationResults"></div>
+            </div>
 
             <!-- Data Summary Section -->
             <div class="data-summary" id="dataSummary">
@@ -292,6 +325,14 @@
                         <div class="label">VaR (5%)</div>
                         <div class="value" id="var5">$0.00</div>
                     </div>
+                    <div class="result-card">
+                        <div class="label">Prob Above NAV</div>
+                        <div class="value" id="probAbove">0.0%</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="label">Expected Dist</div>
+                        <div class="value" id="expectedDist">N/A</div>
+                    </div>
                 </div>
 
                 <div class="weighted-metrics" style="margin-top: 20px;">
@@ -348,6 +389,225 @@
                     <div class="summary-content" id="summaryContent" style="margin-top: 15px;">Awaiting calculation...</div>
                 </div>
             </div>
+
+            <!-- Call Portfolio Moneyness Analysis Section -->
+            <div class="moneyness-section" id="moneynessSection" style="display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <h3 style="margin: 0;">📞 Call Portfolio Moneyness Analysis</h3>
+                    <button class="export-btn" onclick="testMoneynessCalculations()" style="background: #28a745; font-size: 0.9em;">
+                        🧪 Test Calculations
+                    </button>
+                </div>
+                <p style="color: #666; margin-bottom: 20px;">Comprehensive risk analysis of written call options</p>
+                
+                <!-- Summary Cards -->
+                <div class="moneyness-summary-grid">
+                    <div class="moneyness-summary-card">
+                        <div class="metric-label">Total Calls</div>
+                        <div class="metric-value large" id="totalCallsCount">0</div>
+                    </div>
+                    <div class="moneyness-summary-card">
+                        <div class="metric-label">Weighted Moneyness</div>
+                        <div class="metric-value large" id="weightedMoneyness">0.00%</div>
+                    </div>
+                    <div class="moneyness-summary-card">
+                        <div class="metric-label">Call Value</div>
+                        <div class="metric-value large" id="totalCallValue">$0.00M</div>
+                    </div>
+                    <div class="moneyness-summary-card">
+                        <div class="metric-label">Avg Days to Expiry</div>
+                        <div class="metric-value large" id="avgDaysToExpiry">0</div>
+                    </div>
+                </div>
+
+                <!-- Moneyness Distribution -->
+                <div class="moneyness-distribution">
+                    <h4>📊 Moneyness Distribution by Value</h4>
+                    <div class="distribution-container">
+                        <div class="distribution-bar" id="moneynessDistributionBar">
+                            <!-- Distribution segments will be populated by JavaScript -->
+                        </div>
+                        <div class="distribution-legend">
+                            <div class="legend-item">
+                                <span class="legend-color" style="background: #4CAF50;"></span>
+                                <span>Deep OTM (&lt; -10%)</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-color" style="background: #8BC34A;"></span>
+                                <span>OTM (-10% to -2%)</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-color" style="background: #FFC107;"></span>
+                                <span>ATM (-2% to +2%)</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-color" style="background: #FF9800;"></span>
+                                <span>ITM (+2% to +10%)</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-color" style="background: #F44336;"></span>
+                                <span>Deep ITM (&gt; +10%)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Category Breakdown Cards -->
+                <div class="moneyness-categories">
+                    <h4>🎯 Category Breakdown</h4>
+                    <div class="category-grid">
+                        <div class="category-card" id="categoryDEEP_OTM" style="border-left: 4px solid #4CAF50;">
+                            <h5>Deep OTM (&lt; -10%)</h5>
+                            <div class="category-metrics">
+                                <div class="category-metric">
+                                    <span class="metric-label">Positions:</span>
+                                    <span class="category-count">0</span>
+                                </div>
+                                <div class="category-metric">
+                                    <span class="metric-label">Value:</span>
+                                    <span class="category-value">$0.00M</span>
+                                </div>
+                                <div class="category-metric">
+                                    <span class="metric-label">Weight:</span>
+                                    <span class="category-weight">0.0%</span>
+                                </div>
+                            </div>
+                            <div class="risk-indicator low">Low Risk</div>
+                        </div>
+                        
+                        <div class="category-card" id="categoryOTM" style="border-left: 4px solid #8BC34A;">
+                            <h5>OTM (-10% to -2%)</h5>
+                            <div class="category-metrics">
+                                <div class="category-metric">
+                                    <span class="metric-label">Positions:</span>
+                                    <span class="category-count">0</span>
+                                </div>
+                                <div class="category-metric">
+                                    <span class="metric-label">Value:</span>
+                                    <span class="category-value">$0.00M</span>
+                                </div>
+                                <div class="category-metric">
+                                    <span class="metric-label">Weight:</span>
+                                    <span class="category-weight">0.0%</span>
+                                </div>
+                            </div>
+                            <div class="risk-indicator low-med">Low-Med Risk</div>
+                        </div>
+                        
+                        <div class="category-card" id="categoryATM" style="border-left: 4px solid #FFC107;">
+                            <h5>ATM (-2% to +2%)</h5>
+                            <div class="category-metrics">
+                                <div class="category-metric">
+                                    <span class="metric-label">Positions:</span>
+                                    <span class="category-count">0</span>
+                                </div>
+                                <div class="category-metric">
+                                    <span class="metric-label">Value:</span>
+                                    <span class="category-value">$0.00M</span>
+                                </div>
+                                <div class="category-metric">
+                                    <span class="metric-label">Weight:</span>
+                                    <span class="category-weight">0.0%</span>
+                                </div>
+                            </div>
+                            <div class="risk-indicator high">High Risk</div>
+                        </div>
+                        
+                        <div class="category-card" id="categoryITM" style="border-left: 4px solid #FF9800;">
+                            <h5>ITM (+2% to +10%)</h5>
+                            <div class="category-metrics">
+                                <div class="category-metric">
+                                    <span class="metric-label">Positions:</span>
+                                    <span class="category-count">0</span>
+                                </div>
+                                <div class="category-metric">
+                                    <span class="metric-label">Value:</span>
+                                    <span class="category-value">$0.00M</span>
+                                </div>
+                                <div class="category-metric">
+                                    <span class="metric-label">Weight:</span>
+                                    <span class="category-weight">0.0%</span>
+                                </div>
+                            </div>
+                            <div class="risk-indicator high">High Risk</div>
+                        </div>
+                        
+                        <div class="category-card" id="categoryDEEP_ITM" style="border-left: 4px solid #F44336;">
+                            <h5>Deep ITM (&gt; +10%)</h5>
+                            <div class="category-metrics">
+                                <div class="category-metric">
+                                    <span class="metric-label">Positions:</span>
+                                    <span class="category-count">0</span>
+                                </div>
+                                <div class="category-metric">
+                                    <span class="metric-label">Value:</span>
+                                    <span class="category-value">$0.00M</span>
+                                </div>
+                                <div class="category-metric">
+                                    <span class="metric-label">Weight:</span>
+                                    <span class="category-weight">0.0%</span>
+                                </div>
+                            </div>
+                            <div class="risk-indicator very-high">Very High Risk</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Position Heatmap -->
+                <div class="position-heatmap-section">
+                    <h4>🔥 Position Heatmap</h4>
+                    <p style="color: #666; font-size: 0.9em;">Color intensity indicates moneyness magnitude. Green = OTM (safer), Red = ITM (riskier)</p>
+                    <div class="heatmap-container" id="positionHeatmap">
+                        <!-- Heatmap cells will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Risk Gauge -->
+                <div class="risk-gauge-section">
+                    <h4>⚡ Portfolio Risk Gauge</h4>
+                    <div class="risk-gauge-container">
+                        <div class="risk-gauge">
+                            <div class="gauge-background">
+                                <div class="gauge-section low"></div>
+                                <div class="gauge-section medium"></div>
+                                <div class="gauge-section high"></div>
+                            </div>
+                            <div class="gauge-needle" id="riskGaugeNeedle"></div>
+                            <div class="gauge-center"></div>
+                        </div>
+                        <div class="gauge-labels">
+                            <span class="gauge-label left">Low Risk</span>
+                            <span class="gauge-label center">Medium</span>
+                            <span class="gauge-label right">High Risk</span>
+                        </div>
+                        <div class="risk-status" id="riskGaugeLabel">Low Risk</div>
+                    </div>
+                </div>
+
+                <!-- Detailed Position Table -->
+                <div class="moneyness-table-section">
+                    <h4>📋 Detailed Position Analysis</h4>
+                    <div class="scrollable-table">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Underlying</th>
+                                    <th>Current Price</th>
+                                    <th>Strike</th>
+                                    <th>Moneyness</th>
+                                    <th>Category</th>
+                                    <th>DTE</th>
+                                    <th>Weight</th>
+                                    <th>Market Value</th>
+                                </tr>
+                            </thead>
+                            <tbody id="moneynessTableBody">
+                                <!-- Table rows will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -356,10 +616,12 @@
     
     <!-- JavaScript Files -->
 <script src="js/data-processor.js"></script>
+<script src="js/data-validator.js"></script>
 <script src="js/calculations.js"></script>
 <script src="js/file-handler.js"></script>
 <script src="js/visualizations.js"></script>
 <script src="js/exports.js"></script>
+<script src="js/moneyness-analysis.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>

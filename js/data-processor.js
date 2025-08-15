@@ -326,11 +326,24 @@ function displayPositionDetails() {
                             ${createSortableHeader('stocks', 'price', 'Price')}
                             ${createSortableHeader('stocks', 'marketValue', 'Market Value')}
                             ${createSortableHeader('stocks', 'weight', 'Weight')}
+                            ${createSortableHeader('stocks', 'iv30', 'IV30')}
+                            ${createSortableHeader('stocks', 'ivChange', 'IV Chg')}
+                            ${createSortableHeader('stocks', 'dayChange', '% Chg')}
                         </tr>
                     </thead>
                     <tbody>`;
         
         stocksToDisplay.forEach(stock => {
+            // Get market data for this stock
+            const marketData = AppState.marketData ? AppState.marketData[stock.ticker] : null;
+            const iv30 = marketData ? marketData.iv30 : '-';
+            const ivChange = marketData ? marketData.ivChange : '-';
+            const dayChange = marketData ? marketData.changePercent : '-';
+            
+            // Color coding for changes
+            const dayChangeColor = dayChange !== '-' ? (dayChange >= 0 ? 'green' : 'red') : 'inherit';
+            const ivChangeColor = ivChange !== '-' ? (ivChange >= 0 ? 'green' : 'red') : 'inherit';
+            
             html += `
                 <tr>
                     <td>${stock.ticker}</td>
@@ -339,6 +352,9 @@ function displayPositionDetails() {
                     <td>$${stock.price.toFixed(2)}</td>
                     <td>$${stock.marketValue.toLocaleString()}</td>
                     <td>${stock.weight.toFixed(2)}%</td>
+                    <td>${iv30 !== '-' ? iv30.toFixed(1) + '%' : '-'}</td>
+                    <td style="color: ${ivChangeColor}">${ivChange !== '-' ? (ivChange >= 0 ? '+' : '') + ivChange.toFixed(2) + '%' : '-'}</td>
+                    <td style="color: ${dayChangeColor}">${dayChange !== '-' ? (dayChange >= 0 ? '+' : '') + dayChange.toFixed(2) + '%' : '-'}</td>
                 </tr>`;
         });
         html += '</tbody></table></div>';
@@ -515,6 +531,21 @@ function sortTableData(data, column, ascending, type) {
                 aVal = a.daysToExpiry || 0;
                 bVal = b.daysToExpiry || 0;
                 break;
+            case 'iv30':
+                // Get IV from market data
+                aVal = AppState.marketData && AppState.marketData[a.ticker] ? AppState.marketData[a.ticker].iv30 : 0;
+                bVal = AppState.marketData && AppState.marketData[b.ticker] ? AppState.marketData[b.ticker].iv30 : 0;
+                break;
+            case 'ivChange':
+                // Get IV change from market data
+                aVal = AppState.marketData && AppState.marketData[a.ticker] ? AppState.marketData[a.ticker].ivChange : 0;
+                bVal = AppState.marketData && AppState.marketData[b.ticker] ? AppState.marketData[b.ticker].ivChange : 0;
+                break;
+            case 'dayChange':
+                // Get day change from market data
+                aVal = AppState.marketData && AppState.marketData[a.ticker] ? AppState.marketData[a.ticker].changePercent : 0;
+                bVal = AppState.marketData && AppState.marketData[b.ticker] ? AppState.marketData[b.ticker].changePercent : 0;
+                break;
             default:
                 aVal = a[column] || '';
                 bVal = b[column] || '';
@@ -547,8 +578,56 @@ function handleSort(type, column) {
 
 // Make it globally accessible
 window.handleSort = handleSort;
+// Display performance metrics when market data is loaded
+function displayPerformanceMetrics() {
+    if (!AppState.holdingsData || !AppState.marketData) return;
+    
+    // Calculate metrics for each position that has market data
+    let totalMarketMove = 0;
+    let totalIVChange = 0;
+    let positionsWithData = 0;
+    
+    AppState.holdingsData.positions.forEach(position => {
+        const symbol = position.underlying || position.ticker;
+        const marketData = AppState.marketData[symbol];
+        
+        if (marketData) {
+            totalMarketMove += (marketData.changePercent || 0) * position.weight;
+            totalIVChange += (marketData.iv30Change || 0) * position.weight;
+            positionsWithData++;
+        }
+    });
+    
+    // Update the summary display if it exists
+    const summaryGrid = document.getElementById('summaryGrid');
+    if (summaryGrid && positionsWithData > 0) {
+        // Add performance metrics to the existing summary
+        const perfMetricsHTML = `
+            <div class="summary-item">
+                <div class="label">Market Move</div>
+                <div class="value">${totalMarketMove >= 0 ? '+' : ''}${totalMarketMove.toFixed(2)}%</div>
+            </div>
+            <div class="summary-item">
+                <div class="label">IV Change</div>
+                <div class="value">${totalIVChange >= 0 ? '+' : ''}${totalIVChange.toFixed(1)}%</div>
+            </div>
+        `;
+        
+        // Check if performance metrics already exist, if not append them
+        if (!summaryGrid.querySelector('.perf-metrics')) {
+            const perfDiv = document.createElement('div');
+            perfDiv.className = 'perf-metrics';
+            perfDiv.innerHTML = perfMetricsHTML;
+            summaryGrid.appendChild(perfDiv);
+        }
+    }
+    
+    console.log(`Performance metrics calculated for ${positionsWithData} positions`);
+}
+
 // Make functions globally available
 window.processHoldingsData = processHoldingsData;
 window.processMarketData = processMarketData;
 window.displayHoldingsSummary = displayHoldingsSummary;
 window.displayPositionDetails = displayPositionDetails;
+window.displayPerformanceMetrics = displayPerformanceMetrics;

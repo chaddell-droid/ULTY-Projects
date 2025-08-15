@@ -609,7 +609,53 @@ function animateNumbers() {
     });
 }
 
+// Create projection chart
+function createProjectionChart(currentNAV, projectionDays, projectedNAVs) {
+    console.log('Creating projection chart with', projectedNAVs.length, 'simulations');
+    
+    // Get or create container for chart
+    let chartContainer = document.getElementById('projectionChart');
+    if (!chartContainer) {
+        const resultsSection = document.getElementById('resultsSection');
+        if (resultsSection) {
+            chartContainer = document.createElement('div');
+            chartContainer.id = 'projectionChart';
+            chartContainer.innerHTML = '<canvas id="projectionCanvas"></canvas>';
+            chartContainer.style.marginTop = '20px';
+            chartContainer.style.height = '300px';
+            resultsSection.appendChild(chartContainer);
+        }
+    }
+    
+    // For now, just log that we would create the chart
+    console.log('Projection chart would show NAV from', currentNAV, 'over', projectionDays, 'days');
+}
+
+// Create distribution chart
+function createDistributionChart(projectedNAVs, currentNAV) {
+    console.log('Creating distribution chart for', projectedNAVs.length, 'NAV projections');
+    
+    // Get or create container for chart
+    let chartContainer = document.getElementById('distributionChart');
+    if (!chartContainer) {
+        const resultsSection = document.getElementById('resultsSection');
+        if (resultsSection) {
+            chartContainer = document.createElement('div');
+            chartContainer.id = 'distributionChart';
+            chartContainer.innerHTML = '<canvas id="distributionCanvas"></canvas>';
+            chartContainer.style.marginTop = '20px';
+            chartContainer.style.height = '300px';
+            resultsSection.appendChild(chartContainer);
+        }
+    }
+    
+    // For now, just log that we would create the chart
+    console.log('Distribution chart would show NAV distribution around', currentNAV);
+}
+
 // Export functions
+window.createProjectionChart = createProjectionChart;
+window.createDistributionChart = createDistributionChart;
 window.createNowcastVisualization = createNowcastVisualization;
 window.createMoneynessAnalysis = createMoneynessAnalysis;
 window.createWaterfallChart = createWaterfallChart;
