@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Moving Average Dashboard</title>
+    <link rel="stylesheet" href="css/main.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>Moving Average Dashboard</h1>
+        <div class="upload-section">
+            <label>
+                Stock Symbols (comma separated):
+                <input type="text" id="symbolsInput" placeholder="AAPL,MSFT,SPY" />
+            </label>
+            <label style="margin-left:1em;">
+                ORATS API Key:
+                <input type="password" id="apiKeyInput" placeholder="API Key" />
+            </label>
+            <button class="upload-btn" id="loadButton">Load Data</button>
+        </div>
+        <div id="results" class="file-details-section" style="margin-top:20px;"></div>
+    </div>
+    <script src="js/moving-average-dashboard.js"></script>
+</body>
+</html>

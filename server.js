@@ -73,6 +73,20 @@ const server = http.createServer((req, res) => {
         });
         return;
     }
+
+    if (pathname.endsWith('.html')) {
+        const htmlPath = path.join(__dirname, pathname);
+        fs.readFile(htmlPath, (err, data) => {
+            if (err) {
+                res.writeHead(404);
+                res.end('File not found');
+            } else {
+                res.writeHead(200, {'Content-Type': 'text/html'});
+                res.end(data);
+            }
+        });
+        return;
+    }
     
     // Serve CSS files
     if (pathname.startsWith('/css/')) {
