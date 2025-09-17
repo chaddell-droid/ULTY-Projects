@@ -18,6 +18,36 @@
         </div>
 
         <div class="content">
+            <!-- Stock Moving Average Dashboard -->
+            <div class="stock-dashboard" id="stockDashboard">
+                <div class="stock-dashboard-header">
+                    <div class="stock-dashboard-copy">
+                        <h3>📈 Stock Moving Average Dashboard</h3>
+                        <p>Track short- and long-term trends across any basket of tickers in seconds.</p>
+                    </div>
+                    <button class="ma-secondary-btn" id="exportMovingAverages" disabled>
+                        Export to Excel
+                    </button>
+                </div>
+
+                <div class="ma-input-wrapper">
+                    <label for="symbolInput">Stock Symbols</label>
+                    <div class="ma-input-row">
+                        <input type="text" id="symbolInput" placeholder="Example: AAPL, MSFT, GOOG, TSLA">
+                        <button class="ma-primary-btn" id="fetchMovingAverages">Calculate Moving Averages</button>
+                    </div>
+                    <small class="ma-hint">Separate tickers with commas. We support up to 25 symbols per request.</small>
+                </div>
+
+                <div class="ma-status" id="stockDashboardStatus" role="status" aria-live="polite" style="display: none;"></div>
+
+                <div class="ma-grid" id="movingAverageGrid">
+                    <div class="ma-placeholder">
+                        Enter one or more comma-separated tickers and click <strong>Calculate Moving Averages</strong> to populate the dashboard.
+                    </div>
+                </div>
+            </div>
+
             <!-- File Upload Section -->
             <div class="upload-section">
                 <div class="upload-box" id="holdingsBox">
@@ -613,8 +643,10 @@
 
     <!-- External Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-    
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
     <!-- JavaScript Files -->
+<script src="js/stock-dashboard.js"></script>
 <script src="js/data-processor.js"></script>
 <script src="js/data-validator.js"></script>
 <script src="js/calculations.js"></script>
