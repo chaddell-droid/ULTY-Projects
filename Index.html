@@ -18,6 +18,45 @@
         </div>
 
         <div class="content">
+            <!-- Interactive Brokers Account Section -->
+            <div class="ib-account-section" id="ibAccountSection">
+                <div class="ib-header">
+                    <div class="ib-header-copy">
+                        <h3>🏦 Interactive Brokers Account</h3>
+                        <p>View real-time account information from your IB account</p>
+                    </div>
+                    <div class="ib-controls">
+                        <button class="ib-connect-btn" id="ibConnectBtn">Connect to IB</button>
+                        <button class="ib-disconnect-btn" id="ibDisconnectBtn" style="display: none;">Disconnect</button>
+                        <button class="ib-refresh-btn" id="ibRefreshBtn" style="display: none;">Refresh Data</button>
+                    </div>
+                </div>
+
+                <div class="ib-status" id="ibStatus" role="status" aria-live="polite">
+                    <p>Click "Connect to IB" to fetch your account information from IB Gateway or TWS</p>
+                </div>
+
+                <div class="ib-data" id="ibData" style="display: none;">
+                    <!-- Account Summary -->
+                    <div class="ib-summary">
+                        <h4>Account Summary</h4>
+                        <div class="ib-summary-grid" id="ibSummaryGrid"></div>
+                    </div>
+
+                    <!-- Positions -->
+                    <div class="ib-positions">
+                        <h4>Current Positions</h4>
+                        <div class="ib-positions-table" id="ibPositionsTable"></div>
+                    </div>
+
+                    <!-- Accounts -->
+                    <div class="ib-accounts">
+                        <h4>Managed Accounts</h4>
+                        <div id="ibAccountsList"></div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Stock Moving Average Dashboard -->
             <div class="stock-dashboard" id="stockDashboard">
                 <div class="stock-dashboard-header">
@@ -646,6 +685,7 @@
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
     <!-- JavaScript Files -->
+<script src="js/ib-handler.js"></script>
 <script src="js/stock-dashboard.js"></script>
 <script src="js/data-processor.js"></script>
 <script src="js/data-validator.js"></script>

@@ -4,11 +4,24 @@ const https = require('https');
 const fs = require('fs');
 const path = require('path');
 const url = require('url');
+const { IBApiNext, IBApiNextError } = require('@stoqey/ib');
 
 const PORT = 8080;
 const DOWNLOADS_DIR = 'C:\\Users\\Chad\\Downloads';
 const MOVING_AVERAGE_SYMBOL_REGEX = /^[A-Za-z0-9.\-^=]{1,15}$/;
 const MAX_MOVING_AVERAGE_SYMBOLS = 25;
+
+// Interactive Brokers configuration
+const IB_CONFIG = {
+    host: '127.0.0.1',
+    port: 4002,  // 4001 for live, 4002 for paper trading (Gateway), 7496 for TWS live, 7497 for TWS paper
+    clientId: 1
+};
+
+// IB API instance (lazy-loaded)
+let ibApi = null;
+let ibConnected = false;
+let ibConnectionInProgress = false;
 
 // CORS headers to allow browser access
 const corsHeaders = {
@@ -153,6 +166,120 @@ function fetchSymbolMovingAverages(symbol) {
             request.destroy(new Error('Request timed out'));
         });
     });
+}
+
+// Interactive Brokers connection and data retrieval functions
+async function connectToIB() {
+    if (ibConnected) {
+        return { success: true, message: 'Already connected' };
+    }
+
+    if (ibConnectionInProgress) {
+        return { success: false, error: 'Connection already in progress' };
+    }
+
+    try {
+        ibConnectionInProgress = true;
+
+        if (!ibApi) {
+            ibApi = new IBApiNext({
+                host: IB_CONFIG.host,
+                port: IB_CONFIG.port,
+                clientId: IB_CONFIG.clientId
+            });
+
+            // Set up error handler
+            ibApi.on('error', (err, data) => {
+                console.error('IB API Error:', err, data);
+            });
+
+            // Set up disconnection handler
+            ibApi.on('disconnected', () => {
+                console.log('Disconnected from IB Gateway/TWS');
+                ibConnected = false;
+            });
+        }
+
+        await ibApi.connect();
+        ibConnected = true;
+        ibConnectionInProgress = false;
+
+        console.log('Successfully connected to Interactive Brokers');
+        return { success: true, message: 'Connected to IB' };
+    } catch (error) {
+        ibConnectionInProgress = false;
+        ibConnected = false;
+        console.error('Failed to connect to IB:', error);
+        return {
+            success: false,
+            error: error.message || 'Failed to connect to IB Gateway/TWS',
+            details: 'Make sure IB Gateway or TWS is running and accepting API connections'
+        };
+    }
+}
+
+async function getIBAccountInfo() {
+    try {
+        // Connect if not already connected
+        if (!ibConnected) {
+            const connectionResult = await connectToIB();
+            if (!connectionResult.success) {
+                return connectionResult;
+            }
+        }
+
+        // Get account summary
+        const accountSummary = await ibApi.getAccountSummary('All', [
+            'NetLiquidation',
+            'TotalCashValue',
+            'GrossPositionValue',
+            'BuyingPower',
+            'AvailableFunds',
+            'ExcessLiquidity',
+            'Cushion',
+            'InitMarginReq',
+            'MaintMarginReq',
+            'RealizedPnL',
+            'UnrealizedPnL'
+        ]);
+
+        // Get positions
+        const positions = await ibApi.getPositions();
+
+        // Get managed accounts
+        const accounts = await ibApi.getManagedAccounts();
+
+        return {
+            success: true,
+            data: {
+                accounts: accounts || [],
+                summary: accountSummary || {},
+                positions: positions || [],
+                lastUpdated: new Date().toISOString()
+            }
+        };
+    } catch (error) {
+        console.error('Error fetching IB account info:', error);
+        return {
+            success: false,
+            error: error.message || 'Failed to fetch account information',
+            details: 'Check IB Gateway/TWS connection and API settings'
+        };
+    }
+}
+
+async function disconnectFromIB() {
+    if (ibApi && ibConnected) {
+        try {
+            await ibApi.disconnect();
+            ibConnected = false;
+            return { success: true, message: 'Disconnected from IB' };
+        } catch (error) {
+            console.error('Error disconnecting from IB:', error);
+            return { success: false, error: error.message };
+        }
+    }
+    return { success: true, message: 'Not connected' };
 }
 
 // Create HTTP server
@@ -324,6 +451,66 @@ const server = http.createServer((req, res) => {
         return;
     }
 
+    // API endpoint to get IB account information
+    if (pathname === '/api/ib-account-info') {
+        getIBAccountInfo()
+            .then(result => {
+                const statusCode = result.success ? 200 : 500;
+                res.writeHead(statusCode, corsHeaders);
+                res.end(JSON.stringify(result));
+            })
+            .catch(error => {
+                console.error('Error in IB account info endpoint:', error);
+                res.writeHead(500, corsHeaders);
+                res.end(JSON.stringify({
+                    success: false,
+                    error: 'Internal server error',
+                    details: error.message
+                }));
+            });
+        return;
+    }
+
+    // API endpoint to manually connect to IB
+    if (pathname === '/api/ib-connect') {
+        connectToIB()
+            .then(result => {
+                const statusCode = result.success ? 200 : 500;
+                res.writeHead(statusCode, corsHeaders);
+                res.end(JSON.stringify(result));
+            })
+            .catch(error => {
+                console.error('Error in IB connect endpoint:', error);
+                res.writeHead(500, corsHeaders);
+                res.end(JSON.stringify({
+                    success: false,
+                    error: 'Internal server error',
+                    details: error.message
+                }));
+            });
+        return;
+    }
+
+    // API endpoint to disconnect from IB
+    if (pathname === '/api/ib-disconnect') {
+        disconnectFromIB()
+            .then(result => {
+                const statusCode = result.success ? 200 : 500;
+                res.writeHead(statusCode, corsHeaders);
+                res.end(JSON.stringify(result));
+            })
+            .catch(error => {
+                console.error('Error in IB disconnect endpoint:', error);
+                res.writeHead(500, corsHeaders);
+                res.end(JSON.stringify({
+                    success: false,
+                    error: 'Internal server error',
+                    details: error.message
+                }));
+            });
+        return;
+    }
+
     // Default 404
     res.writeHead(404);
     res.end('Not found');
@@ -337,4 +524,11 @@ server.listen(PORT, () => {
     console.log(`  GET http://localhost:${PORT}/api/latest-holdings - Get latest TidalETF file`);
     console.log(`  GET http://localhost:${PORT}/api/latest-chameleon - Get latest Market Chameleon file`);
     console.log(`  GET http://localhost:${PORT}/api/moving-averages?symbols=AAPL,MSFT - Get moving averages for tickers`);
+    console.log(`  GET http://localhost:${PORT}/api/ib-account-info - Get Interactive Brokers account information`);
+    console.log(`  GET http://localhost:${PORT}/api/ib-connect - Connect to IB Gateway/TWS`);
+    console.log(`  GET http://localhost:${PORT}/api/ib-disconnect - Disconnect from IB Gateway/TWS`);
+    console.log(`\nInteractive Brokers Config:`);
+    console.log(`  Host: ${IB_CONFIG.host}`);
+    console.log(`  Port: ${IB_CONFIG.port} (4001=Gateway Live, 4002=Gateway Paper, 7496=TWS Live, 7497=TWS Paper)`);
+    console.log(`  Client ID: ${IB_CONFIG.clientId}`);
 });

@@ -1,0 +1,20 @@
+{
+  "name": "ulty-projects",
+  "version": "1.0.0",
+  "description": "A web-based tool for projecting ULTY ETF NAV using holdings data and market prices. Calculates forward NAV estimates with vega adjustments for options positions.",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://local_proxy@127.0.0.1:49685/git/chaddell-droid/ULTY-Projects"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@stoqey/ib": "^1.5.1"
+  }
+}
