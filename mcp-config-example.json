@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "interactive-brokers": {
+      "command": "npx",
+      "args": ["-y", "interactive-brokers-mcp"],
+      "env": {
+        "IB_ACCOUNT": "YOUR_IB_ACCOUNT_ID",
+        "IB_HOST": "localhost",
+        "IB_PORT": "4002"
+      }
+    }
+  }
+}
