@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "interactive-brokers": {
+      "command": "node",
+      "args": ["/home/user/ULTY-Projects/interactive-brokers-mcp/dist/index.js"],
+      "env": {
+        "IB_HEADLESS_MODE": "false",
+        "IB_PAPER_TRADING": "true"
+      }
+    }
+  }
+}

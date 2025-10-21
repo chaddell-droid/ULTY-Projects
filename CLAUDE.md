@@ -78,6 +78,30 @@ The application handles OCC option format parsing in `data-processor.js`:
 - Example: `AFRM 250815C00077500` = AFRM Call, Aug 15 2025, $77.50 strike
 - Strike price conversion: last 8 digits / 1000
 
+## Interactive Brokers MCP Integration
+
+✅ **NEW**: Interactive Brokers MCP server configured for Claude Code
+
+The project now includes an MCP (Model Context Protocol) server that enables direct integration with Interactive Brokers accounts. This allows Claude Code to:
+
+- Fetch account information and balances
+- Retrieve current positions with P&L data
+- Get real-time market data for symbols
+- Place orders (market, limit, stop)
+- Monitor order status and live orders
+
+**Setup Files:**
+- `.claude/mcp.json` - MCP server configuration
+- `.env.ib.example` - Environment template for IB credentials
+- `IB_MCP_SETUP.md` - Complete setup and usage documentation
+- `interactive-brokers-mcp/` - MCP server repository (gitignored)
+
+**Usage:**
+See `IB_MCP_SETUP.md` for detailed setup instructions and security guidelines.
+
+**Future Integration:**
+The IB MCP server can be integrated with the ULTY NAV Nowcast Tool to automatically fetch holdings and market data instead of relying on manual CSV uploads.
+
 ## Current Implementation Status
 
 ✅ Completed:
@@ -89,7 +113,9 @@ The application handles OCC option format parsing in `data-processor.js`:
 - Monte Carlo simulations
 - Chart visualizations
 - CSV export functionality
+- Interactive Brokers MCP server setup
 
 ⚠️ Known Issues:
 - Error handling for malformed CSV data could be improved
 - No data persistence between sessions
+- IB MCP integration not yet connected to NAV Nowcast calculations (future enhancement)
