@@ -85,6 +85,39 @@
                 </div>
             </div>
 
+            <!-- Interactive Brokers Section -->
+            <div class="upload-section" style="margin-top: 20px;">
+                <div class="upload-box" id="ibBox" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                    <h3 style="color: white;">Interactive Brokers Account</h3>
+                    <p style="font-size: 0.9em; color: #f0f0f0; margin: 10px 0;">Fetch live account data from IB Client Portal</p>
+                    <div class="button-group">
+                        <button class="auto-load-btn" onclick="connectToIB()" id="ibConnectBtn"
+                                style="background: white; color: #667eea;"
+                                title="Connect to Interactive Brokers Client Portal Gateway">
+                            <svg width="16" height="16" style="margin-right: 6px; vertical-align: middle;">
+                                <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="2" fill="none"/>
+                                <circle cx="8" cy="8" r="2" fill="currentColor"/>
+                            </svg>
+                            Connect to IB
+                        </button>
+                        <button class="auto-load-btn" onclick="fetchIBAccountInfo()" id="ibFetchBtn"
+                                style="background: white; color: #667eea; display: none;"
+                                title="Fetch account positions and portfolio data">
+                            <svg width="16" height="16" style="margin-right: 6px; vertical-align: middle;">
+                                <path d="M8 4v8m4-4l-4 4-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+                            </svg>
+                            Fetch Account Data
+                        </button>
+                    </div>
+                    <div class="file-info" id="ibInfo" style="color: #f0f0f0;">Not connected</div>
+                    <div id="ibAccountSelect" style="display: none; margin-top: 10px;">
+                        <label for="accountSelector" style="color: white; font-size: 0.9em;">Select Account:</label>
+                        <select id="accountSelector" style="margin-left: 10px; padding: 5px; border-radius: 4px; border: 1px solid #ddd;">
+                        </select>
+                    </div>
+                </div>
+            </div>
+
             <div class="status-message" id="statusMessage"></div>
 
             <!-- Data Validation Section -->
@@ -647,6 +680,8 @@
 
     <!-- JavaScript Files -->
 <script src="js/stock-dashboard.js"></script>
+<script src="js/ib-connector.js"></script>
+<script src="js/ib-handler.js"></script>
 <script src="js/data-processor.js"></script>
 <script src="js/data-validator.js"></script>
 <script src="js/calculations.js"></script>
